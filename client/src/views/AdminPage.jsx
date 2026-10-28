@@ -8,7 +8,7 @@ const sections = [
   { key: "services", label: "Serviços", icon: Wrench, mediaField: "image", mediaKind: "image", mediaAccept: "image/jpeg,image/png,image/webp,image/gif,image/avif", mediaLabel: "Carregar fotografia do computador", fields: [["name", "Nome do serviço"], ["detail", "Descrição"], ["image", "Foto (URL ou imagem carregada)"]] },
   { key: "gallery", label: "Galeria", icon: Image, mediaField: "imageUrl", mediaKind: "image", mediaAccept: "image/jpeg,image/png,image/webp,image/gif,image/avif", mediaLabel: "Carregar fotografia do computador", fields: [["title", "Título / nome do trabalho"], ["category", "Serviço realizado"], ["imageUrl", "Foto (URL ou imagem carregada)"]] },
   { key: "videos", label: "Vídeos", icon: Video, mediaField: "videoUrl", mediaKind: "video", mediaAccept: "video/mp4,video/webm,video/quicktime", mediaLabel: "Carregar vídeo do computador", fields: [["title", "Título"], ["description", "Descrição"], ["videoUrl", "Vídeo (URL ou ficheiro carregado)"]] },
-  { key: "brands", label: "Marcas", icon: Users, fields: [["name", "Nome da marca"], ["status", "Colaboração (actual ou anterior)"]] },
+  { key: "brands", label: "Marcas", icon: Users, mediaField: "logo", mediaKind: "image", mediaAccept: "image/jpeg,image/png,image/webp,image/gif,image/avif", mediaLabel: "Carregar logótipo da marca", fields: [["name", "Nome da marca"], ["status", "Colaboração (actual ou anterior)"], ["logo", "Logótipo (URL ou imagem carregada)"]] },
 ];
 
 const settingsFieldGroups = [
@@ -163,6 +163,11 @@ function AdminLogin({ setupRequired, onAuthenticate, error }) {
 
 export default function AdminPage() {
   const controller = useAdminController();
+  useEffect(() => {
+    document.title = "Administração | S.B Luxos";
+    const robots = document.head.querySelector('meta[name="robots"]');
+    if (robots) robots.content = "noindex, nofollow";
+  }, []);
   const [activeSection, setActiveSection] = useState("services");
   const [draft, setDraft] = useState(null);
   const [savingSection, setSavingSection] = useState("");
@@ -214,6 +219,7 @@ export default function AdminPage() {
 
   function addEntry() {
     const entry = Object.fromEntries(section.fields.map(([field]) => [field, ""]));
+    if (activeSection === "brands") entry.status = "actual";
     entry.id = makeId();
     setEditingIndex(null);
     setNewEntry(entry);
@@ -224,8 +230,33 @@ export default function AdminPage() {
     setNewEntry(structuredClone(entries[index]));
   }
 
-  function confirmAddEntry(event) {
+  async function confirmAddEntry(event) {
     event.preventDefault();
+    if (activeSection === "brands") {
+      const currentBrands = structuredClone(draft?.brands ?? controller.content.brands ?? []);
+      if (editingIndex === null) currentBrands.push(newEntry);
+      else currentBrands[editingIndex] = newEntry;
+      const nextContent = structuredClone(controller.content);
+      nextContent.brands = currentBrands;
+      setSavingSection("brands");
+      try {
+        await controller.saveContent(nextContent);
+        setDraft((current) => {
+          if (!current?.brands) return current;
+          const next = structuredClone(current);
+          delete next.brands;
+          return Object.keys(next).length ? next : null;
+        });
+        setNewEntry(null);
+        setEditingIndex(null);
+        notify("success", "Marca guardada e publicada no site.");
+      } catch (error) {
+        notify("error", error.message || "Ocorreu um erro ao guardar a marca.");
+      } finally {
+        setSavingSection("");
+      }
+      return;
+    }
     setDraft((current) => {
       const next = structuredClone(current || controller.content);
       if (editingIndex === null) next[activeSection].push(newEntry);
@@ -263,8 +294,8 @@ export default function AdminPage() {
       const result = await controller.uploadMedia(file, "image");
       changeSetting(field, result.url);
       notify("success", "Imagem carregada. Guarde as alterações para publicar.");
-    } catch {
-      notify("error", "Ocorreu um erro ao carregar a imagem. Tente novamente.");
+    } catch (error) {
+      notify("error", error.message || "Ocorreu um erro ao carregar a imagem. Tente novamente.");
     } finally {
       setSettingsUploading(false);
     }
@@ -281,8 +312,8 @@ export default function AdminPage() {
       const result = await controller.uploadMedia(file, section.mediaKind);
       changeEntry(index, section.mediaField, result.url);
       notify("success", "Ficheiro carregado. Guarde as alterações para publicar.");
-    } catch {
-      notify("error", "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
+    } catch (error) {
+      notify("error", error.message || "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
     } finally {
       setUploadingId("");
     }
@@ -299,8 +330,8 @@ export default function AdminPage() {
       const result = await controller.uploadMedia(file, section.mediaKind);
       setNewEntry((current) => current ? { ...current, [section.mediaField]: result.url } : current);
       notify("success", "Ficheiro carregado.");
-    } catch {
-      notify("error", "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
+    } catch (error) {
+      notify("error", error.message || "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
     } finally {
       setUploadingId("");
     }
@@ -340,8 +371,8 @@ export default function AdminPage() {
         return current;
       });
       notify("success", "Alterações guardadas.");
-    } catch {
-      notify("error", "Ocorreu um erro ao guardar as alterações. Tente novamente.");
+    } catch (error) {
+      notify("error", error.message || "Ocorreu um erro ao guardar as alterações. Tente novamente.");
     } finally {
       setSavingSection("");
     }
@@ -548,7 +579,7 @@ export default function AdminPage() {
           <section className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
             <header className="admin-modal-header">
               <div><span className="admin-kicker">{editingIndex === null ? "NOVO CONTEÚDO" : "EDITAR CONTEÚDO"}</span><h2 id="admin-modal-title">{editingIndex === null ? "Adicionar" : "Editar"} {section.label.toLowerCase()}</h2></div>
-              <button type="button" className="admin-modal-close" aria-label="Fechar" disabled={uploadingId === mediaUploadId(newEntry.id)} onClick={() => setNewEntry(null)}><X size={19} /></button>
+              <button type="button" className="admin-modal-close" aria-label="Fechar" disabled={uploadingId === mediaUploadId(newEntry.id) || savingSection === "brands"} onClick={() => setNewEntry(null)}><X size={19} /></button>
             </header>
             <form onSubmit={confirmAddEntry}>
               <div className="admin-fields">
@@ -556,7 +587,7 @@ export default function AdminPage() {
                   <label className={["detail", "description"].includes(field) ? "admin-field admin-field-wide" : "admin-field"} key={field}>{label}
                     {["detail", "description"].includes(field)
                       ? <textarea value={newEntry[field] || ""} rows="3" onChange={(event) => setNewEntry((current) => ({ ...current, [field]: event.target.value }))} />
-                      : field === "status" ? <select value={newEntry[field] || "actual"} onChange={(event) => setNewEntry((current) => ({ ...current, [field]: event.target.value }))}><option value="actual">Colaboração actual</option><option value="anterior">Colaboração anterior</option></select> : <input value={newEntry[field] || ""} onChange={(event) => setNewEntry((current) => ({ ...current, [field]: event.target.value }))} placeholder={field === "videoUrl" ? "https://..." : ""} />}
+                      : field === "status" ? <select value={newEntry[field] || "actual"} onChange={(event) => setNewEntry((current) => ({ ...current, [field]: event.target.value }))}><option value="actual">Colaboração actual</option><option value="anterior">Colaboração anterior</option></select> : <input value={newEntry[field] || ""} onChange={(event) => setNewEntry((current) => ({ ...current, [field]: event.target.value }))} required={["name", "title", "detail", "image", "imageUrl", "videoUrl", "logo"].includes(field)} placeholder={field === "videoUrl" ? "https://..." : ""} />}
                   </label>
                 ))}
               </div>
@@ -577,8 +608,8 @@ export default function AdminPage() {
                 )}
               </div>
               <div className="admin-modal-actions">
-                <button type="button" className="admin-secondary-button" disabled={uploadingId === mediaUploadId(newEntry.id)} onClick={() => setNewEntry(null)}>Cancelar</button>
-                <button className="admin-primary-button" disabled={uploadingId === mediaUploadId(newEntry.id)}>{editingIndex === null ? <Plus size={16} /> : <Save size={16} />} {editingIndex === null ? "Adicionar item" : "Guardar edição"}</button>
+                <button type="button" className="admin-secondary-button" disabled={uploadingId === mediaUploadId(newEntry.id) || savingSection === "brands"} onClick={() => setNewEntry(null)}>Cancelar</button>
+                <button className="admin-primary-button" disabled={uploadingId === mediaUploadId(newEntry.id) || savingSection === "brands"}>{savingSection === "brands" ? <Save size={16} /> : editingIndex === null ? <Plus size={16} /> : <Save size={16} />} {savingSection === "brands" ? "A publicar..." : activeSection === "brands" ? "Guardar e publicar marca" : editingIndex === null ? "Adicionar item" : "Guardar edição"}</button>
               </div>
             </form>
           </section>

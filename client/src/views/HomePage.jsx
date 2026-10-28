@@ -26,6 +26,71 @@ const imageUrl = (id, width = 900) =>
       ? resolveMediaUrl(id)
       : `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=85`;
 
+function updateMeta(selector, attribute, value) {
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    if (selector.startsWith('meta[property=')) element.setAttribute("property", selector.match(/"([^"]+)"/)[1]);
+    else element.setAttribute("name", selector.match(/"([^"]+)"/)[1]);
+    document.head.append(element);
+  }
+  element.setAttribute(attribute, value);
+}
+
+function useSearchMetadata(settings, services) {
+  useEffect(() => {
+    const companyName = settings.companyName || "S.B Luxos";
+    const serviceNames = services.map((service) => service.name).filter(Boolean);
+    const description = `${companyName}: ${serviceNames.slice(0, 3).join(", ") || "acabamentos e design de interiores"} em Benfica, Luanda. Peça o seu orçamento pelo WhatsApp.`.slice(0, 160);
+    const title = `${companyName} | Acabamentos e design de interiores em Luanda`;
+    const socialImage = imageUrl(settings.heroImage, 1200);
+    document.title = title;
+    updateMeta('meta[name="description"]', "content", description);
+    updateMeta('meta[name="robots"]', "content", "index, follow, max-image-preview:large");
+    updateMeta('meta[property="og:title"]', "content", title);
+    updateMeta('meta[property="og:description"]', "content", description);
+    updateMeta('meta[property="og:image"]', "content", socialImage);
+    updateMeta('meta[property="og:image:alt"]', "content", `Interior com acabamentos contemporâneos da ${companyName}`);
+    updateMeta('meta[name="twitter:title"]', "content", title);
+    updateMeta('meta[name="twitter:description"]', "content", description);
+    updateMeta('meta[name="twitter:image"]', "content", socialImage);
+
+    const canonical = document.head.querySelector('link[rel="canonical"]') || document.createElement("link");
+    canonical.rel = "canonical";
+    canonical.href = `${window.location.origin}${window.location.pathname}`;
+    if (!canonical.isConnected) document.head.append(canonical);
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "HomeAndConstructionBusiness",
+      name: companyName,
+      description,
+      url: canonical.href,
+      image: socialImage,
+      telephone: settings.phone,
+      email: settings.email || undefined,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: settings.address,
+        addressLocality: "Luanda",
+        addressRegion: "Luanda",
+        addressCountry: "AO",
+      },
+      areaServed: { "@type": "City", name: "Luanda" },
+      hasMap: settings.mapUrl || undefined,
+      knowsAbout: serviceNames,
+    };
+    let script = document.getElementById("business-structured-data");
+    if (!script) {
+      script = document.createElement("script");
+      script.id = "business-structured-data";
+      script.type = "application/ld+json";
+      document.head.append(script);
+    }
+    script.textContent = JSON.stringify(structuredData);
+  }, [settings, services]);
+}
+
 function videoEmbedUrl(videoUrl) {
   try {
     const url = new URL(videoUrl);
@@ -50,6 +115,7 @@ function HomePage() {
   const videos = content.videos;
   const brands = content.brands || [];
   const settings = content.settings;
+  useSearchMetadata(settings, services);
   const phoneDigits = settings.phone.replace(/\D/g, "");
   const directWhatsAppUrl = `https://wa.me/${settings.whatsapp}`;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -102,6 +168,7 @@ function HomePage() {
           <a href="#inicio" onClick={closeMenu}>{settings.navHome}</a>
           <a href="#sobre" onClick={closeMenu}>{settings.navAbout}</a>
           <a href="#servicos" onClick={closeMenu}>{settings.navServices}</a>
+          <a href="#marcas" onClick={closeMenu}>Marcas</a>
           <a href="#projetos" onClick={closeMenu}>{settings.navGallery}</a>
           <a href="#contacto" onClick={closeMenu}>{settings.navContact}</a>
         </nav>
@@ -167,17 +234,17 @@ function HomePage() {
           <div className="services-cta"><span>{settings.servicesCtaText}</span><a className="underlined-link" href="#contacto">{settings.servicesCtaButton} <ArrowRight size={16} /></a></div>
         </section>
 
-        {brands.length > 0 && (
-          <section className="brands section" aria-labelledby="brands-title">
-            <div className="section-top">
-              <div><div className="eyebrow"><span /> PARCERIAS</div><h2 id="brands-title">Marcas que confiam em nós.</h2></div>
-              <p>Marcas com quem já colaborámos e que continuam a fazer parte do nosso percurso.</p>
+        <section className="brands section" id="marcas" aria-labelledby="brands-title">
+          <div className="section-top">
+            <div><div className="eyebrow"><span /> PARCERIAS</div><h2 id="brands-title">Marcas que confiam em nós.</h2></div>
+            <p>Marcas com quem já colaborámos e que continuam a fazer parte do nosso percurso.</p>
+          </div>
+          {brands.length > 0
+            ? <div className="brands-grid">
+              {brands.map((brand) => <div className="brand-card" key={brand.id}>{brand.logo ? <img src={imageUrl(brand.logo, 360)} alt={`Logótipo ${brand.name}`} loading="lazy" /> : <strong>{brand.name}</strong>}<span>{brand.status === "actual" ? "Colaboração actual" : "Colaboração anterior"}</span></div>)}
             </div>
-            <div className="brands-grid">
-              {brands.map((brand) => <div className="brand-card" key={brand.id}><strong>{brand.name}</strong><span>{brand.status === "actual" ? "Colaboração actual" : "Colaboração anterior"}</span></div>)}
-            </div>
-          </section>
-        )}
+            : <p className="brands-empty">Os logótipos das marcas parceiras serão apresentados aqui.</p>}
+        </section>
 
         <section className="inspiration section" id="projetos">
           <div className="section-top">

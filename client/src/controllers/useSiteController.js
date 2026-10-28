@@ -8,17 +8,30 @@ export function useSiteController() {
 
   useEffect(() => {
     let active = true;
-    siteModel.getContent()
-      .then((result) => {
-        if (active) setContent(result);
-      })
-      .catch((error) => {
+    async function loadContent() {
+      try {
+        const result = await siteModel.getContent();
+        if (active) {
+          setContent(result);
+          setContentError("");
+        }
+      } catch (error) {
         if (active) setContentError(error.message);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
-    return () => { active = false; };
+      }
+    }
+    const refreshWhenVisible = () => {
+      if (!document.hidden) loadContent();
+    };
+    loadContent();
+    window.addEventListener("focus", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, []);
 
   const submitQuote = useCallback((quote) => siteModel.createQuote(quote), []);

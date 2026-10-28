@@ -18,21 +18,21 @@ export const apiRoutes = {
 
 async function parseResponse(response) {
   if (response.status === 204) return null;
-  if (!response.ok) {
-    throw new Error("Ocorreu um erro. Tente novamente.");
-  }
+  let payload;
   try {
-    return await response.json();
+    payload = await response.json();
   } catch {
     throw new Error("Ocorreu um erro. Tente novamente.");
   }
+  if (!response.ok) throw new Error(payload?.error || "Ocorreu um erro. Tente novamente.");
+  return payload;
 }
 
 async function fetchResponse(url, options) {
   try {
     return await fetch(url, options);
   } catch {
-    throw new Error("Ocorreu um erro. Tente novamente.");
+    throw new Error("Não foi possível contactar a API. Verifique se o servidor está ligado e tente novamente.");
   }
 }
 

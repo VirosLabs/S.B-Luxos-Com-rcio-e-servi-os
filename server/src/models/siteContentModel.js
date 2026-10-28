@@ -204,7 +204,7 @@ function validateContent(value) {
       ids.add(item.id);
 
       const requiredFields = section === "brands"
-        ? ["name", "status"]
+        ? ["name", "status", "logo"]
         : section === "services"
         ? ["name", "detail", "image"]
         : section === "gallery"
@@ -221,10 +221,12 @@ function validateContent(value) {
         if (!["actual", "anterior"].includes(item.status)) {
           throw new ContentValidationError("A colaboração da marca deve ser actual ou anterior.");
         }
-        continue;
+        if (item.logo !== undefined && typeof item.logo !== "string") {
+          throw new ContentValidationError("O logótipo da marca deve ser um endereço de imagem válido.");
+        }
       }
 
-      const mediaUrl = section === "services" ? item.image : section === "gallery" ? item.imageUrl : item.videoUrl;
+      const mediaUrl = section === "brands" ? item.logo : section === "services" ? item.image : section === "gallery" ? item.imageUrl : item.videoUrl;
       if (mediaUrl && typeof mediaUrl === "string" && mediaUrl.startsWith(`${config.mediaRoute}/`)) {
         const extensionPattern = section === "videos"
           ? /\.(mp4|webm|mov)$/i

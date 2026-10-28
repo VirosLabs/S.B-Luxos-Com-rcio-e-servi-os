@@ -53,6 +53,9 @@ app.use((error, _request, response, _next) => {
   if (error.code === "LIMIT_FILE_SIZE") {
     return response.status(413).json({ error: "O ficheiro excede o limite permitido para este tipo de mídia." });
   }
+  if (["EACCES", "ENOSPC", "EROFS"].includes(error.code)) {
+    return response.status(507).json({ error: "O servidor não conseguiu guardar o ficheiro. Verifique as permissões e o espaço disponível no armazenamento." });
+  }
   if (error.code === "LIMIT_UNEXPECTED_FILE" || error.message.includes("Formato não suportado") || error.message.includes("tipo de ficheiro")) {
     return response.status(400).json({ error: error.message });
   }

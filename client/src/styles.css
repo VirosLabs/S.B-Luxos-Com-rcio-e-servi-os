@@ -97,7 +97,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .brands-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); border-top: 1px solid #dce4ee; border-left: 1px solid #dce4ee; }
 .brand-card { min-height: 110px; padding: 22px; display: flex; flex-direction: column; justify-content: center; gap: 8px; border-right: 1px solid #dce4ee; border-bottom: 1px solid #dce4ee; }
 .brand-card strong { color: var(--navy); font: 700 17px "Manrope", sans-serif; }
+.brand-card img { display: block; width: min(100%, 190px); height: 55px; object-fit: contain; object-position: left center; }
 .brand-card span { color: #8390a2; font-size: 10px; }
+.brands-empty { margin: 0; padding: 25px 0; border-top: 1px solid #dce4ee; color: #8390a2; font-size: 12px; }
 
 .inspiration { padding-top: 105px; padding-bottom: 111px; }
 .inspiration-grid { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 15px; }
