@@ -6,6 +6,8 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
+  ChevronDown,
+  ChevronUp,
   Clock3,
   MapPin,
   Mail,
@@ -114,9 +116,12 @@ function HomePage() {
   const brands = content.brands || [];
   const settings = content.settings;
   useSearchMetadata(settings, services);
-  const phoneDigits = settings.phone.replace(/\D/g, "");
   const directWhatsAppUrl = `https://wa.me/${settings.whatsapp}`;
+  const footerPhone = "+244 929 277 042";
+  const footerWhatsAppUrl = "https://wa.me/244929277042";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAllServices, setShowAllServices] = useState(false);
+  const [showAllGallery, setShowAllGallery] = useState(false);
   const [formState, setFormState] = useState("idle");
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [toast, setToast] = useState(null);
@@ -154,11 +159,12 @@ function HomePage() {
           type="button"
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
           aria-expanded={menuOpen}
+          aria-controls="primary-navigation"
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-        <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="Navegação principal">
+        <nav id="primary-navigation" className={menuOpen ? "nav nav-open" : "nav"} aria-label="Navegação principal">
           <a href="#inicio" onClick={closeMenu}>{settings.navHome}</a>
           <a href="#sobre" onClick={closeMenu}>{settings.navAbout}</a>
           <a href="#servicos" onClick={closeMenu}>{settings.navServices}</a>
@@ -213,7 +219,7 @@ function HomePage() {
             <div><div className="eyebrow"><span /> {settings.servicesEyebrow}</div><h2>{settings.servicesTitle}</h2></div>
             <p>{settings.servicesDescription}</p>
           </div>
-          <div className="service-grid">
+          <div id="service-list" className={`service-grid${showAllServices ? "" : " service-grid-collapsed"}`}>
             {services.map((service, index) => (
               <article className="service-card" key={service.id}>
                 <a className="service-image" href="#contacto" aria-label={`Pedir orçamento: ${service.name}`}>
@@ -225,6 +231,18 @@ function HomePage() {
               </article>
             ))}
           </div>
+          {services.length > 5 && (
+            <button
+              className={`content-more services-more services-more-mobile${services.length > 7 ? " services-more-large" : ""}`}
+              type="button"
+              aria-expanded={showAllServices}
+              aria-controls="service-list"
+              onClick={() => setShowAllServices((show) => !show)}
+            >
+              {showAllServices ? "Ver menos serviços" : "Ver mais serviços"}
+              {showAllServices ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+            </button>
+          )}
           <div className="services-cta"><span>{settings.servicesCtaText}</span><a className="underlined-link" href="#contacto">{settings.servicesCtaButton} <ArrowRight size={16} /></a></div>
         </section>
 
@@ -259,7 +277,7 @@ function HomePage() {
             <p>{settings.galleryDescription}</p>
           </div>
           {gallery.length > 0 && (
-            <div className="inspiration-grid">
+            <div id="gallery-list" className={`inspiration-grid${showAllGallery ? "" : " inspiration-grid-collapsed"}`}>
               {gallery.map((item, index) => (
                 <article className={`inspiration-card${index === 0 ? " inspiration-large" : ""}`} key={item.id}>
                   <img src={resolveMediaUrl(item.imageUrl)} alt={item.title} loading="lazy" />
@@ -267,6 +285,18 @@ function HomePage() {
                 </article>
               ))}
             </div>
+          )}
+          {gallery.length > 5 && (
+            <button
+              className="content-more gallery-more"
+              type="button"
+              aria-expanded={showAllGallery}
+              aria-controls="gallery-list"
+              onClick={() => setShowAllGallery((show) => !show)}
+            >
+              {showAllGallery ? "Ver menos imagens" : "Ver mais imagens"}
+              {showAllGallery ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+            </button>
           )}
           {gallery.length === 0 && <div className="gallery-empty">{settings.galleryEmptyText}</div>}
         </section>
@@ -317,21 +347,12 @@ function HomePage() {
             <div className="eyebrow"><span /> {settings.contactEyebrow}</div>
             <h2>{settings.contactTitle}</h2>
             <p>{settings.contactDescription}</p>
-            <div className="contact-list">
-              <a href={`tel:+${phoneDigits}`}><span className="contact-icon"><Phone size={18} /></span><span><small>{settings.contactPhoneLabel}</small>{settings.phone}</span></a>
-              <a href={settings.mapUrl} target="_blank" rel="noreferrer">
-                <span className="contact-icon"><MapPin size={18} /></span>
-                <span><small>{settings.contactAddressLabel}</small>{settings.address}</span>
-              </a>
-              <div><span className="contact-icon"><Clock3 size={18} /></span><span><small>{settings.contactHoursLabel}</small>{settings.openingHours}</span></div>
-              {settings.email && <a href={`mailto:${settings.email}`}><span className="contact-icon"><Mail size={18} /></span><span><small>{settings.contactEmailLabel}</small>{settings.email}</span></a>}
-            </div>
-            <a className="map-link" href={settings.mapUrl} target="_blank" rel="noreferrer">
-              {settings.mapButton} <ArrowUpRight size={15} />
-            </a>
           </div>
           <form className="quote-form" onSubmit={handleSubmit}>
-            <div className="form-title"><div><small>{settings.formEyebrow}</small><h3>{settings.formTitle}</h3></div><MessageCircle size={23} /></div>
+            <div className="form-title">
+              <div><small>{settings.formEyebrow}</small><h3>{settings.formTitle}</h3></div>
+              <span className="form-title-icon"><MessageCircle size={19} aria-hidden="true" /></span>
+            </div>
             <label>{settings.formNameLabel}<input name="name" type="text" placeholder={settings.formNamePlaceholder} autoComplete="name" required /></label>
             <label>{settings.formPhoneLabel}<input name="phone" type="tel" placeholder={settings.formPhonePlaceholder} autoComplete="tel" required /></label>
             <label>{settings.formServiceLabel}
@@ -356,14 +377,51 @@ function HomePage() {
       </main>
 
       <footer className="footer">
-        <a className="brand footer-brand" href="#inicio">
-          <span className="brand-initials">{settings.brandInitials}</span>
-          <span className="brand-name"><strong>{settings.brandName}</strong><small>{settings.headerBrandSubtitle}</small></span>
-        </a>
-        <p>{settings.footerDescription}<br />{settings.footerLocation}</p>
-        <div className="footer-nav"><a href="#inicio">{settings.navHome}</a><a href="#sobre">{settings.navAbout}</a><a href="#servicos">{settings.navServices}</a><a href="#projetos">{settings.navGallery}</a><a href="#contacto">{settings.navContact}</a></div>
-        <a className="footer-wa" href={directWhatsAppUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> {settings.footerWhatsAppLabel} <ArrowUpRight size={14} /></a>
-        <small className="copyright">© {new Date().getFullYear()} {settings.companyName}. {settings.footerCopyright}</small>
+        <div className="footer-main">
+          <div className="footer-about">
+            <a className="brand footer-brand" href="#inicio">
+              <span className="brand-initials">{settings.brandInitials}</span>
+              <span className="brand-name"><strong>{settings.brandName}</strong><small>{settings.headerBrandSubtitle}</small></span>
+            </a>
+            <div className="footer-about-copy">
+              <p>{settings.footerDescription}</p>
+              <span>{settings.footerLocation}</span>
+            </div>
+          </div>
+          <section className="footer-details" aria-labelledby="footer-contact-title">
+            <div className="footer-heading">
+              <span>FALE CONNOSCO</span>
+              <h2 id="footer-contact-title">Estamos aqui para ajudar.</h2>
+            </div>
+            <div className="footer-contact" role="group" aria-label="Contactos">
+              <a className="footer-contact-item" href={footerWhatsAppUrl} target="_blank" rel="noreferrer">
+                <span className="footer-contact-icon"><Phone size={17} aria-hidden="true" /></span>
+                <span className="footer-contact-copy"><small>TELEFONE / WHATSAPP</small><strong>{footerPhone}</strong></span>
+              </a>
+              <a className="footer-contact-item" href={settings.mapUrl} target="_blank" rel="noreferrer">
+                <span className="footer-contact-icon"><MapPin size={17} aria-hidden="true" /></span>
+                <span className="footer-contact-copy"><small>VISITE-NOS</small><strong>{settings.address}</strong></span>
+              </a>
+              <div className="footer-contact-item">
+                <span className="footer-contact-icon"><Clock3 size={17} aria-hidden="true" /></span>
+                <span className="footer-contact-copy"><small>HORÁRIO DE CONTACTO</small><strong>{settings.openingHours}</strong></span>
+              </div>
+              {settings.email && (
+                <a className="footer-contact-item" href={`mailto:${settings.email}`}>
+                  <span className="footer-contact-icon"><Mail size={17} aria-hidden="true" /></span>
+                  <span className="footer-contact-copy"><small>E-MAIL</small><strong>{settings.email}</strong></span>
+                </a>
+              )}
+            </div>
+            <a className="footer-map-link" href={settings.mapUrl} target="_blank" rel="noreferrer">
+              <MapPin size={16} aria-hidden="true" /> Ver localização no mapa <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          </section>
+        </div>
+        <div className="footer-bottom">
+          <nav className="footer-nav" aria-label="Navegação do rodapé"><a href="#inicio">{settings.navHome}</a><a href="#sobre">{settings.navAbout}</a><a href="#servicos">{settings.navServices}</a><a href="#projetos">{settings.navGallery}</a><a href="#contacto">{settings.navContact}</a></nav>
+          <small className="copyright">© {new Date().getFullYear()} {settings.companyName}. {settings.footerCopyright}</small>
+        </div>
       </footer>
       <a className="floating-wa" href={directWhatsAppUrl} target="_blank" rel="noreferrer" aria-label={settings.floatingWhatsAppLabel}><MessageCircle size={23} /><span>{settings.floatingWhatsAppLabel}</span></a>
     </div>
