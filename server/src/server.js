@@ -9,6 +9,15 @@ import { connectDatabase, closeDatabase } from "./database/pool.js";
 import { runMigrations } from "./database/migrate.js";
 
 const app = express();
+app.disable("x-powered-by");
+
+app.use((_request, response, next) => {
+  response.setHeader("X-Content-Type-Options", "nosniff");
+  response.setHeader("X-Frame-Options", "DENY");
+  response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  next();
+});
 
 app.use(cors({
   origin(origin, callback) {
@@ -60,7 +69,7 @@ app.use((error, _request, response, _next) => {
   if (["EACCES", "ENOSPC", "EROFS"].includes(error.code)) {
     return response.status(507).json({ error: "O servidor não conseguiu guardar o ficheiro. Verifique as permissões e o espaço disponível no armazenamento." });
   }
-  if (error.code === "LIMIT_UNEXPECTED_FILE" || error.message.includes("Formato não suportado") || error.message.includes("tipo de ficheiro")) {
+  if (error.code === "LIMIT_UNEXPECTED_FILE" || (typeof error.message === "string" && (error.message.includes("Formato não suportado") || error.message.includes("tipo de ficheiro")))) {
     return response.status(400).json({ error: error.message });
   }
   console.error(error);

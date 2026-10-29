@@ -3,6 +3,12 @@ import { config } from "../config/env.js";
 
 let pool;
 
+function boundedInteger(value, fallback, minimum, maximum) {
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) return fallback;
+  return Math.min(maximum, Math.max(minimum, parsed));
+}
+
 function createPoolFromUrl(databaseUrl) {
   let url;
   try {
@@ -19,6 +25,7 @@ function createPoolFromUrl(databaseUrl) {
   }
 
   const useTls = url.protocol === "mysqls:" || url.searchParams.get("ssl") === "true";
+  const connectionLimit = boundedInteger(process.env.DB_CONNECTION_LIMIT, 10, 1, 50);
   return mysql.createPool({
     host: url.hostname,
     port: url.port ? Number(url.port) : 3306,
@@ -26,8 +33,14 @@ function createPoolFromUrl(databaseUrl) {
     password: decodeURIComponent(url.password),
     database: decodeURIComponent(url.pathname.slice(1)),
     waitForConnections: true,
-    connectionLimit: Number(process.env.DB_CONNECTION_LIMIT) || 10,
-    queueLimit: 0,
+    connectionLimit,
+    maxIdle: boundedInteger(process.env.DB_MAX_IDLE, Math.max(connectionLimit - 1, 0), 0, connectionLimit),
+    idleTimeout: boundedInteger(process.env.DB_IDLE_TIMEOUT_MS, 60000, 1000, 600000),
+    connectTimeout: boundedInteger(process.env.DB_CONNECT_TIMEOUT_MS, 10000, 1000, 60000),
+    queueLimit: boundedInteger(process.env.DB_QUEUE_LIMIT, 100, 1, 1000),
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
+    multipleStatements: false,
     ssl: useTls ? { rejectUnauthorized: true } : undefined,
     timezone: "Z",
   });

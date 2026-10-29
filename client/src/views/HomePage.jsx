@@ -107,7 +107,7 @@ function videoEmbedUrl(videoUrl) {
 }
 
 function HomePage() {
-  const { content, submitQuote, contentError } = useSiteController();
+  const { content, submitQuote } = useSiteController();
   const services = content.services;
   const gallery = content.gallery;
   const videos = content.videos;
@@ -121,10 +121,6 @@ function HomePage() {
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [toast, setToast] = useState(null);
   const dismissToast = useCallback(() => setToast(null), []);
-
-  useEffect(() => {
-    if (contentError) setToast({ type: "error", message: "Ocorreu um erro ao carregar o site." });
-  }, [contentError]);
 
   async function handleSubmit(event) {
     event.preventDefault();

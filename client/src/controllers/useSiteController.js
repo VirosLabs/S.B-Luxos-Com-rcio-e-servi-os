@@ -4,7 +4,6 @@ import { defaultSiteSettings, siteModel } from "../models/siteModel.js";
 export function useSiteController() {
   const [content, setContent] = useState({ settings: defaultSiteSettings, services: [], gallery: [], videos: [], brands: [] });
   const [loading, setLoading] = useState(true);
-  const [contentError, setContentError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -13,10 +12,9 @@ export function useSiteController() {
         const result = await siteModel.getContent();
         if (active) {
           setContent(result);
-          setContentError("");
         }
       } catch (error) {
-        if (active) setContentError(error.message);
+        if (active) console.error("Could not load public site content:", error);
       } finally {
         if (active) setLoading(false);
       }
@@ -35,5 +33,5 @@ export function useSiteController() {
   }, []);
 
   const submitQuote = useCallback((quote) => siteModel.createQuote(quote), []);
-  return { content, loading, contentError, submitQuote };
+  return { content, loading, submitQuote };
 }
