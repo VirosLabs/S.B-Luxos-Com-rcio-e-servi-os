@@ -1,13 +1,13 @@
 ﻿import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Image, LogOut, Pencil, Plus, Save, Settings, Trash2, Users, UserPlus, Video, Wrench, X } from "lucide-react";
 import { useAdminController } from "../controllers/useAdminController.js";
-import { resolveMediaUrl } from "../models/apiClient.js";
+import { isUploadedMedia, resolveMediaUrl } from "../models/apiClient.js";
 import ToastNotice from "./ToastNotice.jsx";
 
 const sections = [
   { key: "services", label: "Serviços", icon: Wrench, mediaField: "image", mediaKind: "image", mediaAccept: "image/jpeg,image/png,image/webp,image/gif,image/avif", mediaLabel: "Carregar fotografia do computador", fields: [["name", "Nome do serviço"], ["detail", "Descrição"], ["image", "Foto (URL ou imagem carregada)"]] },
   { key: "gallery", label: "Galeria", icon: Image, mediaField: "imageUrl", mediaKind: "image", mediaAccept: "image/jpeg,image/png,image/webp,image/gif,image/avif", mediaLabel: "Carregar fotografia do computador", fields: [["title", "Título / nome do trabalho"], ["category", "Serviço realizado"], ["imageUrl", "Foto (URL ou imagem carregada)"]] },
-  { key: "videos", label: "Vídeos", icon: Video, mediaField: "videoUrl", mediaKind: "video", mediaAccept: "video/mp4,video/webm,video/quicktime", mediaLabel: "Carregar vídeo do computador", fields: [["title", "Título"], ["description", "Descrição"], ["videoUrl", "Vídeo (URL ou ficheiro carregado)"]] },
+  { key: "videos", label: "Vídeos", icon: Video, mediaField: "videoUrl", mediaKind: "video", mediaAccept: "video/mp4,video/webm,video/quicktime", mediaLabel: "Carregar vídeo do computador", fields: [["title", "Título"], ["description", "Descrição"], ["videoUrl", "Vídeo (URL ou nome do ficheiro carregado)"]] },
   { key: "brands", label: "Marcas", icon: Users, mediaField: "logo", mediaKind: "image", mediaAccept: "image/jpeg,image/png,image/webp,image/gif,image/avif", mediaLabel: "Carregar logótipo da marca", fields: [["name", "Nome da marca"], ["status", "Colaboração (actual ou anterior)"], ["logo", "Logótipo (URL ou imagem carregada)"]] },
 ];
 
@@ -309,7 +309,7 @@ export default function AdminPage() {
     setUploadingId(mediaUploadId(entryId));
     try {
       const result = await controller.uploadMedia(file, section.mediaKind);
-      changeEntry(index, section.mediaField, section.mediaKind === "image" ? result.filename : result.url);
+      changeEntry(index, section.mediaField, result.filename);
       notify("success", "Ficheiro carregado. Guarde as alterações para publicar.");
     } catch (error) {
       notify("error", error.message || "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
@@ -327,7 +327,7 @@ export default function AdminPage() {
     setUploadingId(mediaUploadId(entryId));
     try {
       const result = await controller.uploadMedia(file, section.mediaKind);
-      setNewEntry((current) => current ? { ...current, [section.mediaField]: section.mediaKind === "image" ? result.filename : result.url } : current);
+      setNewEntry((current) => current ? { ...current, [section.mediaField]: result.filename } : current);
       notify("success", "Ficheiro carregado.");
     } catch (error) {
       notify("error", error.message || "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
@@ -561,7 +561,7 @@ export default function AdminPage() {
                       alt={`Pré-visualização: ${entry.title || entry.name || "imagem"}`}
                     />
                   )}
-                  {section.mediaKind === "video" && entry[section.mediaField]?.startsWith("/uploads/") && (
+                  {section.mediaKind === "video" && isUploadedMedia(entry[section.mediaField]) && (
                     <video className="admin-video-preview" src={resolveMediaUrl(entry[section.mediaField])} controls preload="metadata" />
                   )}
                 </div>
@@ -602,7 +602,7 @@ export default function AdminPage() {
                     ? `https://images.unsplash.com/${newEntry[section.mediaField]}?auto=format&fit=crop&w=320&q=70`
                     : resolveMediaUrl(newEntry[section.mediaField])} alt={`Pré-visualização: ${newEntry.title || newEntry.name || "imagem"}`} />
                 )}
-                {section.mediaKind === "video" && newEntry[section.mediaField]?.startsWith("/uploads/") && (
+                {section.mediaKind === "video" && isUploadedMedia(newEntry[section.mediaField]) && (
                   <video className="admin-video-preview" src={resolveMediaUrl(newEntry[section.mediaField])} controls preload="metadata" />
                 )}
               </div>

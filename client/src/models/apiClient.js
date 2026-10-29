@@ -65,9 +65,16 @@ export async function uploadMediaFile(file, kind, token) {
   return parseResponse(response);
 }
 
+export function isUploadedMedia(mediaUrl) {
+  if (typeof mediaUrl !== "string" || !mediaUrl) return false;
+  const mediaPrefix = `${apiRoutes.media}/`;
+  const filename = mediaUrl.startsWith(mediaPrefix) ? mediaUrl.slice(mediaPrefix.length) : mediaUrl;
+  return /^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif|mp4|webm|mov)$/i.test(filename);
+}
+
 export function resolveMediaUrl(mediaUrl) {
   if (typeof mediaUrl !== "string" || !mediaUrl) return "";
-  const uploadedFilename = /^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif|mp4|webm|mov)$/i.test(mediaUrl);
+  const uploadedFilename = isUploadedMedia(mediaUrl) && !mediaUrl.startsWith(`${apiRoutes.media}/`);
   const mediaPath = uploadedFilename ? `${apiRoutes.media}/${mediaUrl}` : mediaUrl;
   return mediaPath.startsWith(`${apiRoutes.media}/`) ? `${apiOrigin}${mediaPath}` : mediaPath;
 }

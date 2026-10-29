@@ -19,7 +19,7 @@ function storedMediaFilename(value) {
   return value.startsWith(mediaPrefix) ? value.slice(mediaPrefix.length) : value;
 }
 
-function imageNameForStorage(value) {
+function mediaNameForStorage(value) {
   const mediaPrefix = `${config.mediaRoute}/`;
   return typeof value === "string" && value.startsWith(mediaPrefix)
     ? value.slice(mediaPrefix.length)
@@ -270,14 +270,14 @@ function validateContent(value) {
   return {
     settings: {
       ...settings,
-      heroImage: imageNameForStorage(settings.heroImage),
-      aboutImage: imageNameForStorage(settings.aboutImage),
-      calloutImage: imageNameForStorage(settings.calloutImage),
+      heroImage: mediaNameForStorage(settings.heroImage),
+      aboutImage: mediaNameForStorage(settings.aboutImage),
+      calloutImage: mediaNameForStorage(settings.calloutImage),
     },
-    services: value.services.map((item) => ({ ...item, image: imageNameForStorage(item.image) })),
-    gallery: value.gallery.map((item) => ({ ...item, imageUrl: imageNameForStorage(item.imageUrl) })),
-    videos: value.videos,
-    brands: (value.brands ?? []).map((item) => ({ ...item, logo: imageNameForStorage(item.logo) })),
+    services: value.services.map((item) => ({ ...item, image: mediaNameForStorage(item.image) })),
+    gallery: value.gallery.map((item) => ({ ...item, imageUrl: mediaNameForStorage(item.imageUrl) })),
+    videos: value.videos.map((item) => ({ ...item, videoUrl: mediaNameForStorage(item.videoUrl) })),
+    brands: (value.brands ?? []).map((item) => ({ ...item, logo: mediaNameForStorage(item.logo) })),
   };
 }
 
