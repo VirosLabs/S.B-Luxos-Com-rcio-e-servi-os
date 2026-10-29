@@ -2,7 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { projectDirectory } from "../config/env.js";
 import { config } from "../config/env.js";
-import { getPool } from "../database/pool.js";
+import { executeRead, getPool } from "../database/pool.js";
 
 const legacyFilePath = path.join(projectDirectory, "server", "data", "site-content.json");
 
@@ -96,7 +96,6 @@ const defaultContent = {
     footerDescription: "Acabamentos e design de interiores.",
     footerLocation: "Benfica, Luanda — Angola.",
     footerCopyright: "Todos os direitos reservados.",
-    footerAdminLabel: "Administração",
     footerWhatsAppLabel: "WhatsApp",
     floatingWhatsAppLabel: "Fale connosco",
     whatsapp: config.whatsappNumber,
@@ -260,7 +259,7 @@ function validateContent(value) {
 
 export async function getContent() {
   const pool = getPool();
-  const [rows] = await pool.execute(
+  const [rows] = await executeRead(
     "SELECT settings, services, gallery, videos, brands FROM site_content WHERE id = 1",
   );
   if (rows.length) return validateContent(parseContentRow(rows[0]));
@@ -279,7 +278,7 @@ export async function getContent() {
       JSON.stringify(validContent.brands),
     ],
   );
-  const [seededRows] = await pool.execute(
+  const [seededRows] = await executeRead(
     "SELECT settings, services, gallery, videos, brands FROM site_content WHERE id = 1",
   );
   return validateContent(parseContentRow(seededRows[0]));

@@ -148,7 +148,7 @@ function HomePage() {
   }
 
   return (
-    <>
+    <div className="public-site">
       <ToastNotice toast={toast} onDismiss={dismissToast} />
       <header className="header">
         <a className="brand" href="#inicio" aria-label={`${settings.companyName}, ${settings.navHome.toLowerCase()}`} onClick={closeMenu}>
@@ -356,10 +356,10 @@ function HomePage() {
         <p>{settings.footerDescription}<br />{settings.footerLocation}</p>
         <div className="footer-nav"><a href="#inicio">{settings.navHome}</a><a href="#sobre">{settings.navAbout}</a><a href="#servicos">{settings.navServices}</a><a href="#projetos">{settings.navGallery}</a><a href="#contacto">{settings.navContact}</a></div>
         <a className="footer-wa" href={directWhatsAppUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> {settings.footerWhatsAppLabel} <ArrowUpRight size={14} /></a>
-        <small className="copyright">© {new Date().getFullYear()} {settings.companyName}. {settings.footerCopyright} <a href="/admin">{settings.footerAdminLabel}</a></small>
+        <small className="copyright">© {new Date().getFullYear()} {settings.companyName}. {settings.footerCopyright}</small>
       </footer>
       <a className="floating-wa" href={directWhatsAppUrl} target="_blank" rel="noreferrer" aria-label={settings.floatingWhatsAppLabel}><MessageCircle size={23} /><span>{settings.floatingWhatsAppLabel}</span></a>
-    </>
+    </div>
   );
 }
 

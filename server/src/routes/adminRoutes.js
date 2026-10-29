@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { saveSiteContent } from "../controllers/siteController.js";
-import { logoutAdmin } from "../controllers/authController.js";
+import { getAdminSession, logoutAdmin } from "../controllers/authController.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import { uploadImage, uploadVideo } from "../middleware/uploadMedia.js";
 import { saveUploadedMedia } from "../controllers/uploadController.js";
@@ -15,6 +15,7 @@ export function createAdminRouter(routes) {
   router.post(routes.adminAccounts, createAdminAccount);
   router.delete(`${routes.adminAccounts}/:id`, deleteAdminAccount);
   router.put(routes.adminContent, saveSiteContent);
+  router.get(routes.adminSession, getAdminSession);
   router.delete(routes.adminSession, logoutAdmin);
   return router;
 }

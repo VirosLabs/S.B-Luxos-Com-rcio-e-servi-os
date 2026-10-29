@@ -14,6 +14,31 @@ export function useAdminController() {
   const refresh = useCallback(async () => {
     setStatus("loading");
     try {
+      const savedToken = window.sessionStorage.getItem("sb-luxos-admin-token");
+      if (savedToken) {
+        try {
+          const [session, nextContent, nextAdmins] = await Promise.all([
+            siteModel.getSession(savedToken),
+            siteModel.getContent(),
+            siteModel.getAdmins(savedToken),
+          ]);
+          setToken(savedToken);
+          setExpiresAt(session.expiresAt);
+          setAdmin(session.admin);
+          setAdmins(nextAdmins);
+          setContent(nextContent);
+          setSetupRequired(false);
+          setStatus("ready");
+          return;
+        } catch (sessionError) {
+          if (sessionError.status !== 401) throw sessionError;
+          window.sessionStorage.removeItem("sb-luxos-admin-token");
+          setToken("");
+          setExpiresAt("");
+          setAdmin(null);
+          setAdmins([]);
+        }
+      }
       const [authStatus, nextContent] = await Promise.all([
         siteModel.getAuthStatus(),
         siteModel.getContent(),
@@ -35,6 +60,7 @@ export function useAdminController() {
     if (!expiresAt) return undefined;
     const remaining = new Date(expiresAt).getTime() - Date.now();
     const timer = window.setTimeout(() => {
+      window.sessionStorage.removeItem("sb-luxos-admin-token");
       setToken("");
       setExpiresAt("");
       setAdmin(null);
@@ -56,6 +82,7 @@ export function useAdminController() {
       ]);
       setContent(nextContent);
       setAdmins(nextAdmins);
+      window.sessionStorage.setItem("sb-luxos-admin-token", session.token);
       setToken(session.token);
       setExpiresAt(session.expiresAt);
       setAdmin(session.admin);
@@ -108,6 +135,7 @@ export function useAdminController() {
       await siteModel.logout(token);
     } finally {
       setToken("");
+      window.sessionStorage.removeItem("sb-luxos-admin-token");
       setExpiresAt("");
       setAdmin(null);
       setAdmins([]);

@@ -55,6 +55,25 @@ export function getPool() {
   return pool;
 }
 
+const retryableConnectionErrors = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "EHOSTUNREACH",
+  "PROTOCOL_CONNECTION_LOST",
+]);
+
+export async function executeRead(sql, values = []) {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await getPool().execute(sql, values);
+    } catch (error) {
+      if (attempt > 0 || !retryableConnectionErrors.has(error.code)) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+  }
+}
+
 export async function closeDatabase() {
   if (!pool) return;
   const currentPool = pool;

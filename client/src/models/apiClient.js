@@ -1,4 +1,5 @@
-const apiBase = `${import.meta.env.VITE_API_URL || "http://localhost:3001"}${import.meta.env.VITE_API_PREFIX || "/api"}`;
+const defaultApiUrl = import.meta.env.PROD ? window.location.origin : "http://localhost:3001";
+const apiBase = `${import.meta.env.VITE_API_URL || defaultApiUrl}${import.meta.env.VITE_API_PREFIX || "/api"}`;
 export const apiOrigin = new URL(apiBase).origin;
 
 export const apiRoutes = {
@@ -24,7 +25,11 @@ async function parseResponse(response) {
   } catch {
     throw new Error("Ocorreu um erro. Tente novamente.");
   }
-  if (!response.ok) throw new Error(payload?.error || "Ocorreu um erro. Tente novamente.");
+  if (!response.ok) {
+    const error = new Error(payload?.error || "Ocorreu um erro. Tente novamente.");
+    error.status = response.status;
+    throw error;
+  }
   return payload;
 }
 

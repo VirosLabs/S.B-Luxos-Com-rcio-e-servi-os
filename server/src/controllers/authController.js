@@ -34,3 +34,10 @@ export function logoutAdmin(request, response) {
   endSession(request.adminToken);
   response.status(204).end();
 }
+
+export function getAdminSession(request, response) {
+  response.json({
+    admin: { id: request.admin.id, email: request.admin.email },
+    expiresAt: new Date(request.admin.expiresAt).toISOString(),
+  });
+}

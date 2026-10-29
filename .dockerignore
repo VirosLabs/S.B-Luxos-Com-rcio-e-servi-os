@@ -1,0 +1,13 @@
+.git
+.vite
+.kombai
+node_modules
+**/node_modules
+client/dist
+server/uploads
+server/data
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example

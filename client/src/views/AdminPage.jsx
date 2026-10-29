@@ -108,7 +108,6 @@ const settingsFieldGroups = [
     ["footerLocation", "Localização no rodapé"],
     ["footerWhatsAppLabel", "Botão WhatsApp do rodapé"],
     ["footerCopyright", "Texto de direitos reservados"],
-    ["footerAdminLabel", "Link da administração"],
     ["floatingWhatsAppLabel", "Botão flutuante do WhatsApp"],
   ] },
 ];

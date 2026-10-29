@@ -44,6 +44,10 @@ app.get("*", (_request, response, next) => {
 });
 
 app.use((error, _request, response, _next) => {
+  if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EHOSTUNREACH", "PROTOCOL_CONNECTION_LOST"].includes(error.code)) {
+    console.error("The database connection failed:", error.code);
+    return response.status(503).json({ error: "A base de dados está temporariamente indisponível. Tente novamente." });
+  }
   if (error.status === 404) {
     return response.status(404).json({ error: "O ficheiro pedido não foi encontrado." });
   }

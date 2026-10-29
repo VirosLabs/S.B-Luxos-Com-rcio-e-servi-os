@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm:server:dev\" \"npm:client:dev\"",
-    "server:dev": "node --watch server/src/server.js",
+    "server:dev": "nodemon --watch server --ext js,json,sql,env server/src/server.js",
     "client:dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "db:migrate": "node server/src/database/cli.js",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
+    "nodemon": "^3.1.14",
     "vite": "^6.0.5"
   }
 }

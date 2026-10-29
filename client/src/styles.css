@@ -154,7 +154,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .footer-nav { display: flex; gap: 17px; padding-top: 5px; }
 .footer-nav a { color: #ffffffbe; font-size: 9px; }
 .footer-wa { display: inline-flex; align-items: center; gap: 6px; color: #d8eaff; font-size: 10px; }
-.copyright { grid-column: 1 / -1; padding-top: 14px; border-top: 1px solid #ffffff24; color: #ffffff83; font-size: 8px; }
+.copyright { grid-column: 1 / -1; padding-top: 14px; border-top: 1px solid #ffffff24; color: #ffffff83; font-size: 12px; }
+.public-site h1 { font-size: clamp(32px, 4.5vw, 48px) !important; letter-spacing: normal; }
+.public-site h2 { font-size: 28px !important; letter-spacing: normal; }
+.public-site h3 { font-size: 22px !important; letter-spacing: normal; }
+.public-site :is(h4, h5, h6) { font-size: 16px !important; }
+.public-site p { font-size: 16px !important; }
 .floating-wa { position: fixed; right: 22px; bottom: 20px; z-index: 15; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; gap: 9px; border-radius: 50px; color: #fff; background: #16794f; box-shadow: 0 6px 24px #10284b3b; transition: width .2s, background .2s; }
 .floating-wa span { display: none; font-size: 11px; font-weight: 700; }
 .floating-wa:hover { width: 164px; background: #116641; }
@@ -234,7 +239,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .footer > p { text-align: right; font-size: 10px; }
   .footer-nav { justify-content: start; flex-wrap: wrap; gap: 12px; }
   .footer-wa { justify-self: end; }
-  .copyright { font-size: 8px; }
+  .copyright { font-size: 12px; }
 }
 @media (max-width: 390px) {
   .brand { gap: 7px; }
@@ -341,7 +346,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .admin-login-card label { display: grid; gap: 7px; margin-bottom: 14px; color: #455771; font-size: 10px; font-weight: 700; }
 .admin-login-card .admin-primary-button { width: 100%; }
 .admin-loading { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; color: #68778c; font-size: 12px; }
-.copyright a { margin-left: 9px; color: #c6dbf3; }
 .toast-notice { position: fixed; right: 24px; bottom: 24px; z-index: 100; width: min(390px, calc(100vw - 32px)); min-height: 54px; padding: 13px 14px; display: flex; align-items: center; gap: 11px; border: 1px solid #d5e8dc; background: #fff; box-shadow: 0 12px 35px #10284b26; color: #236742; font-size: 12px; line-height: 1.5; animation: toast-enter .18s ease-out; }
 .toast-notice > span { flex: 1; }
 .toast-notice > button { width: 28px; height: 28px; display: grid; place-items: center; border: 0; color: currentColor; background: transparent; cursor: pointer; }
