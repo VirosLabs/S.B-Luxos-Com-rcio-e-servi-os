@@ -94,12 +94,31 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .services-cta { margin-top: 30px; padding-top: 19px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid #d9e3ef; color: #68788e; font-size: 11px; }
 .services-cta .underlined-link { flex-shrink: 0; margin: 0; }
 .brands { padding-top: 80px; padding-bottom: 86px; }
-.brands-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); border-top: 1px solid #dce4ee; border-left: 1px solid #dce4ee; }
-.brand-card { min-height: 110px; padding: 22px; display: flex; flex-direction: column; justify-content: center; gap: 8px; border-right: 1px solid #dce4ee; border-bottom: 1px solid #dce4ee; }
-.brand-card strong { color: var(--navy); font: 700 17px "Manrope", sans-serif; }
-.brand-card img { display: block; width: min(100%, 190px); height: 55px; object-fit: contain; object-position: left center; }
-.brand-card span { color: #8390a2; font-size: 10px; }
+.brands-marquee { position: relative; overflow: hidden; padding: 12px 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+.brands-track { display: flex; width: max-content; animation: brands-marquee 38s linear infinite; }
+.brands-track:hover, .brands-track:focus-within { animation-play-state: paused; }
+.brands-group { margin: 0; padding: 0 14px 0 0; display: flex; align-items: flex-start; gap: 14px; list-style: none; }
+.brand-item { width: 120px; flex: 0 0 120px; display: grid; justify-items: center; gap: 7px; }
+.brand-card { width: 75px; height: 75px; flex: 0 0 75px; padding: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #d6e1ed; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff 0%, #f5f8fc 72%); text-align: center; box-shadow: 0 6px 16px #10284b0d; transition: border-color .2s, box-shadow .2s, transform .2s; }
+.brand-card-previous { border-color: #bacbdd; background: radial-gradient(circle at 50% 35%, #e5edf6 0%, #d8e3ef 78%); box-shadow: 0 6px 16px #10284b12; }
+.brand-card:hover { transform: translateY(-3px); border-color: #9db9d8; box-shadow: 0 13px 30px #10284b18; }
+.public-site .brand-card strong { overflow-wrap: anywhere; padding: 7px; color: var(--navy); font: 700 10px/1.15 "Manrope", sans-serif !important; }
+.brand-card img { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: contain; object-position: center; }
+.brand-meta { width: 100%; display: grid; gap: 2px; text-align: center; }
+.brand-meta strong { overflow-wrap: anywhere; color: var(--navy); font-size: 12px; font-weight: 700; }
 .brands-empty { margin: 0; padding: 25px 0; border-top: 1px solid #dce4ee; color: #8390a2; font-size: 12px; }
+
+@keyframes brands-marquee {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brands-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .brands-track { width: 100%; animation: none; }
+  .brands-group[aria-hidden="true"] { display: none; }
+  .brands-group:not([aria-hidden]) { width: 100%; padding: 0; flex-wrap: wrap; justify-content: center; }
+  .brand-item { width: 120px; flex: 0 0 120px; }
+}
 
 .inspiration { padding-top: 105px; padding-bottom: 111px; }
 .inspiration-grid { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 15px; }

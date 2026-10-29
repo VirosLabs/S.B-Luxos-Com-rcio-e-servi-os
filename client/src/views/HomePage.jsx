@@ -234,8 +234,21 @@ function HomePage() {
             <p>Marcas com quem já colaborámos e que continuam a fazer parte do nosso percurso.</p>
           </div>
           {brands.length > 0
-            ? <div className="brands-grid">
-              {brands.map((brand) => <div className="brand-card" key={brand.id}>{brand.logo ? <img src={imageUrl(brand.logo, 360)} alt={`Logótipo ${brand.name}`} loading="lazy" /> : <strong>{brand.name}</strong>}<span>{brand.status === "actual" ? "Colaboração actual" : "Colaboração anterior"}</span></div>)}
+            ? <div className="brands-marquee">
+              <div className="brands-track">
+                {[false, true].map((isDuplicate) => (
+                  <ul className="brands-group" aria-label={isDuplicate ? undefined : "Marcas parceiras"} aria-hidden={isDuplicate || undefined} key={isDuplicate ? "duplicate" : "original"}>
+                    {brands.map((brand) => (
+                      <li className="brand-item" key={brand.id}>
+                        <div className={brand.status === "anterior" ? "brand-card brand-card-previous" : "brand-card"}>
+                          {brand.logo ? <img src={imageUrl(brand.logo, 360)} alt={isDuplicate ? "" : `Logótipo ${brand.name}`} loading="lazy" /> : <strong>{brand.name}</strong>}
+                        </div>
+                        {brand.logo && <div className="brand-meta"><strong>{brand.name}</strong></div>}
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+              </div>
             </div>
             : <p className="brands-empty">Os logótipos das marcas parceiras serão apresentados aqui.</p>}
         </section>
