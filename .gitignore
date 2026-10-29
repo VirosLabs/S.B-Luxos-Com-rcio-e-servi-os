@@ -10,4 +10,3 @@ server/.env
 server/.env.*
 !server/.env.example
 server/data/
-server/uploads/
