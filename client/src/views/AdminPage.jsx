@@ -291,7 +291,7 @@ export default function AdminPage() {
     setSettingsUploading(true);
     try {
       const result = await controller.uploadMedia(file, "image");
-      changeSetting(field, result.url);
+      changeSetting(field, result.filename);
       notify("success", "Imagem carregada. Guarde as alterações para publicar.");
     } catch (error) {
       notify("error", error.message || "Ocorreu um erro ao carregar a imagem. Tente novamente.");
@@ -309,7 +309,7 @@ export default function AdminPage() {
     setUploadingId(mediaUploadId(entryId));
     try {
       const result = await controller.uploadMedia(file, section.mediaKind);
-      changeEntry(index, section.mediaField, result.url);
+      changeEntry(index, section.mediaField, section.mediaKind === "image" ? result.filename : result.url);
       notify("success", "Ficheiro carregado. Guarde as alterações para publicar.");
     } catch (error) {
       notify("error", error.message || "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
@@ -327,7 +327,7 @@ export default function AdminPage() {
     setUploadingId(mediaUploadId(entryId));
     try {
       const result = await controller.uploadMedia(file, section.mediaKind);
-      setNewEntry((current) => current ? { ...current, [section.mediaField]: result.url } : current);
+      setNewEntry((current) => current ? { ...current, [section.mediaField]: section.mediaKind === "image" ? result.filename : result.url } : current);
       notify("success", "Ficheiro carregado.");
     } catch (error) {
       notify("error", error.message || "Ocorreu um erro ao carregar o ficheiro. Tente novamente.");
@@ -476,7 +476,7 @@ export default function AdminPage() {
                 <div className="admin-settings-images">
                   {[["heroImage", "Imagem do destaque"], ["aboutImage", "Imagem de Sobre nós"], ["calloutImage", "Imagem do convite"]].map(([field, label]) => (
                     <div className="admin-settings-image" key={field}>
-                      <label className="admin-field">{label} (URL HTTPS ou caminho carregado)
+                      <label className="admin-field">{label} (URL HTTPS ou nome do ficheiro carregado)
                         <input value={settings[field] || ""} onChange={(event) => changeSetting(field, event.target.value)} required />
                       </label>
                       <label className="admin-upload-label">Escolher imagem do computador

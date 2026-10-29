@@ -66,8 +66,8 @@ export async function uploadMediaFile(file, kind, token) {
 }
 
 export function resolveMediaUrl(mediaUrl) {
-  if (typeof mediaUrl !== "string" || !mediaUrl.startsWith(`${apiRoutes.media}/`)) {
-    return mediaUrl || "";
-  }
-  return `${apiOrigin}${mediaUrl}`;
+  if (typeof mediaUrl !== "string" || !mediaUrl) return "";
+  const uploadedFilename = /^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif|mp4|webm|mov)$/i.test(mediaUrl);
+  const mediaPath = uploadedFilename ? `${apiRoutes.media}/${mediaUrl}` : mediaUrl;
+  return mediaPath.startsWith(`${apiRoutes.media}/`) ? `${apiOrigin}${mediaPath}` : mediaPath;
 }

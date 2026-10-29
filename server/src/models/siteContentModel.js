@@ -13,6 +13,31 @@ class ContentValidationError extends Error {
   }
 }
 
+function storedMediaFilename(value) {
+  if (typeof value !== "string") return "";
+  const mediaPrefix = `${config.mediaRoute}/`;
+  return value.startsWith(mediaPrefix) ? value.slice(mediaPrefix.length) : value;
+}
+
+function imageNameForStorage(value) {
+  const mediaPrefix = `${config.mediaRoute}/`;
+  return typeof value === "string" && value.startsWith(mediaPrefix)
+    ? value.slice(mediaPrefix.length)
+    : value;
+}
+
+function isStoredImage(value) {
+  return /^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif)$/i.test(storedMediaFilename(value));
+}
+
+function isStoredMedia(value, section) {
+  const filename = storedMediaFilename(value);
+  const extensionPattern = section === "videos"
+    ? /\.(mp4|webm|mov)$/i
+    : /\.(jpg|png|webp|gif|avif)$/i;
+  return /^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif|mp4|webm|mov)$/i.test(filename) && extensionPattern.test(filename);
+}
+
 const defaultContent = {
   settings: {
     heroImage: "photo-1600607687920-4e2a09cf159d",
@@ -146,15 +171,13 @@ function validateContent(value) {
   if (!/^\d{1,3}$/.test(settings.yearsExperience)) {
     throw new ContentValidationError("Os anos de experiência devem ser um número entre 0 e 999.");
   }
-  if (settings.heroImage && settings.heroImage.startsWith(`${config.mediaRoute}/`)) {
-    const assetName = settings.heroImage.slice(config.mediaRoute.length + 1);
-    if (!/^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif)$/i.test(assetName)) {
+  if (settings.heroImage && (settings.heroImage.startsWith(`${config.mediaRoute}/`) || isStoredImage(settings.heroImage))) {
+    if (!isStoredImage(settings.heroImage)) {
       throw new ContentValidationError("A imagem principal carregada não é válida.");
     }
     for (const [field, label] of [["aboutImage", "secção Sobre"], ["calloutImage", "convite de contacto"]]) {
-      if (settings[field] && settings[field].startsWith(`${config.mediaRoute}/`)) {
-        const assetName = settings[field].slice(config.mediaRoute.length + 1);
-        if (!/^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif)$/i.test(assetName)) {
+      if (settings[field] && (settings[field].startsWith(`${config.mediaRoute}/`) || isStoredImage(settings[field]))) {
+        if (!isStoredImage(settings[field])) {
           throw new ContentValidationError(`A imagem da ${label} carregada não é válida.`);
         }
       } else if (settings[field] && !settings[field].startsWith("photo-")) {
@@ -226,12 +249,8 @@ function validateContent(value) {
       }
 
       const mediaUrl = section === "brands" ? item.logo : section === "services" ? item.image : section === "gallery" ? item.imageUrl : item.videoUrl;
-      if (mediaUrl && typeof mediaUrl === "string" && mediaUrl.startsWith(`${config.mediaRoute}/`)) {
-        const extensionPattern = section === "videos"
-          ? /\.(mp4|webm|mov)$/i
-          : /\.(jpg|png|webp|gif|avif)$/i;
-        const assetName = mediaUrl.slice(config.mediaRoute.length + 1);
-        if (!/^[a-f0-9-]{36}\.(jpg|png|webp|gif|avif|mp4|webm|mov)$/i.test(assetName) || !extensionPattern.test(assetName)) {
+      if (mediaUrl && typeof mediaUrl === "string" && (mediaUrl.startsWith(`${config.mediaRoute}/`) || isStoredMedia(mediaUrl, section))) {
+        if (!isStoredMedia(mediaUrl, section)) {
           throw new ContentValidationError(`O ficheiro carregado em "${section}" não é válido.`);
         }
       } else if (mediaUrl && typeof mediaUrl === "string" && !mediaUrl.startsWith("photo-")) {
@@ -249,11 +268,16 @@ function validateContent(value) {
   }
 
   return {
-    settings,
-    services: value.services,
-    gallery: value.gallery,
+    settings: {
+      ...settings,
+      heroImage: imageNameForStorage(settings.heroImage),
+      aboutImage: imageNameForStorage(settings.aboutImage),
+      calloutImage: imageNameForStorage(settings.calloutImage),
+    },
+    services: value.services.map((item) => ({ ...item, image: imageNameForStorage(item.image) })),
+    gallery: value.gallery.map((item) => ({ ...item, imageUrl: imageNameForStorage(item.imageUrl) })),
     videos: value.videos,
-    brands: value.brands ?? [],
+    brands: (value.brands ?? []).map((item) => ({ ...item, logo: imageNameForStorage(item.logo) })),
   };
 }
 

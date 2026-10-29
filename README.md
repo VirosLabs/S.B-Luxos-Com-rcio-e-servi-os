@@ -17,14 +17,14 @@ Exemplo de URL local: `mysql://utilizador:senha@localhost:3306/sb_luxos`. O serv
 
 ## Docker
 
-O Docker Compose executa a aplicaÃ§Ã£o num container e conserva os ficheiros carregados pelo painel num volume persistente. A base de dados continua a ser a indicada por `DATABASE_URL` em `server/.env`; este Compose nÃ£o cria nem migra uma base de dados MySQL separada. As migraÃ§Ãµes existentes sÃ£o aplicadas automaticamente quando a aplicaÃ§Ã£o inicia.
+O Docker Compose executa a aplicaÃ§Ã£o num container e monta `server/uploads` diretamente, para reutilizar as imagens e vÃ­deos existentes e conservar os novos ficheiros carregados pelo painel. A base de dados continua a ser a indicada por `DATABASE_URL` em `server/.env`; este Compose nÃ£o cria nem migra uma base de dados MySQL separada. As migraÃ§Ãµes existentes sÃ£o aplicadas automaticamente quando a aplicaÃ§Ã£o inicia.
 
 1. Instale o Docker Desktop e inicie o Docker.
 2. Copie `server/.env.example` para `server/.env` e configure `DATABASE_URL` para a base de dados que pretende usar.
 3. Copie `.env.example` para `.env`. Para executar localmente, os valores predefinidos sÃ£o suficientes; para publicar com um domÃ­nio, defina `CLIENT_ORIGIN` com a origem HTTPS do site.
 4. Execute `docker compose up --build -d` na pasta do projeto. O site ficarÃ¡ disponÃ­vel em `http://localhost:3001` por predefiniÃ§Ã£o.
 
-Para ver os registos, execute `docker compose logs -f app`. Para parar a aplicaÃ§Ã£o, execute `docker compose down`; os uploads continuam guardados no volume `uploads`. A imagem exclui os ficheiros `.env`, a base de dados legada local e os uploads do contexto de build.
+Para ver os registos, execute `docker compose logs -f app`. Para parar a aplicaÃ§Ã£o, execute `docker compose down`; os uploads continuam na pasta `server/uploads`. A imagem exclui os ficheiros `.env`, a base de dados legada local e os uploads do contexto de build.
 
 ## Estrutura
 

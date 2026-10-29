@@ -20,11 +20,9 @@ import "../styles.css";
 import ToastNotice from "./ToastNotice.jsx";
 
 const imageUrl = (id, width = 900) =>
-  id?.startsWith("https://")
-    ? id
-    : id?.startsWith("/uploads/")
-      ? resolveMediaUrl(id)
-      : `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=85`;
+  id?.startsWith("photo-")
+    ? `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=85`
+    : resolveMediaUrl(id);
 
 function updateMeta(selector, attribute, value) {
   let element = document.head.querySelector(selector);
