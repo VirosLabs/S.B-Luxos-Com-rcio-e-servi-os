@@ -12,7 +12,6 @@ import {
   MapPin,
   Mail,
   Menu,
-  MessageCircle,
   Phone,
   ShieldCheck,
   Sparkles,
@@ -106,6 +105,24 @@ function videoEmbedUrl(videoUrl) {
   } catch {
     return "";
   }
+}
+
+function WhatsAppIcon({ size = 20, className = "" }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        fill="currentColor"
+        d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.45 0 .04 5.41.04 12.02c0 2.12.55 4.19 1.6 6.01L0 24l6.14-1.61A12.02 12.02 0 0 0 12.06 24c6.61 0 12.02-5.41 12.02-12.02 0-3.23-1.25-6.27-3.56-8.5Zm-7.46 18.4c-1.8 0-3.56-.48-5.11-1.39l-.37-.22-3.64.95 1-3.54-.24-.37A9.63 9.63 0 0 1 2.4 12.02A9.64 9.64 0 0 1 12.06 2.38c2.57 0 4.98 1 6.8 2.82A9.63 9.63 0 0 1 21.7 12.02c0 5.3-4.32 9.62-9.64 9.62Zm5.29-7.21c-.29-.15-1.71-.84-1.98-.94-.27-.1-.46-.15-.66.15-.2.29-.76.94-.94 1.14-.17.2-.35.22-.64.08-.29-.15-1.23-.46-2.34-1.46-.87-.77-1.45-1.71-1.62-2-.17-.29-.02-.44.13-.58.13-.13.29-.35.43-.52.14-.17.19-.29.29-.49.1-.2.05-.37-.02-.52-.07-.15-.66-1.61-.91-2.2-.24-.58-.49-.5-.66-.5h-.57c-.19 0-.5.07-.76.35-.26.29-1 .98-1 2.39 0 1.41 1.03 2.77 1.17 2.96.15.2 2.03 3.1 4.92 4.34.69.3 1.23.48 1.65.62.7.22 1.34.19 1.84.11.56-.08 1.71-.7 1.95-1.38.24-.68.24-1.27.17-1.39-.07-.12-.27-.19-.56-.34Z"
+      />
+    </svg>
+  );
 }
 
 function HomePage() {
@@ -351,7 +368,7 @@ function HomePage() {
           <form className="quote-form" onSubmit={handleSubmit}>
             <div className="form-title">
               <div><small>{settings.formEyebrow}</small><h3>{settings.formTitle}</h3></div>
-              <span className="form-title-icon"><MessageCircle size={19} aria-hidden="true" /></span>
+              <span className="form-title-icon"><WhatsAppIcon size={19} /></span>
             </div>
             <label>{settings.formNameLabel}<input name="name" type="text" placeholder={settings.formNamePlaceholder} autoComplete="name" required /></label>
             <label>{settings.formPhoneLabel}<input name="phone" type="tel" placeholder={settings.formPhonePlaceholder} autoComplete="tel" required /></label>
@@ -423,7 +440,7 @@ function HomePage() {
           <small className="copyright">© {new Date().getFullYear()} {settings.companyName}. {settings.footerCopyright}</small>
         </div>
       </footer>
-      <a className="floating-wa" href={directWhatsAppUrl} target="_blank" rel="noreferrer" aria-label={settings.floatingWhatsAppLabel}><MessageCircle size={23} /><span>{settings.floatingWhatsAppLabel}</span></a>
+      <a className="floating-wa" href={directWhatsAppUrl} target="_blank" rel="noreferrer" aria-label={settings.floatingWhatsAppLabel}><WhatsAppIcon size={23} /><span>{settings.floatingWhatsAppLabel}</span></a>
     </div>
   );
 }

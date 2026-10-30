@@ -526,43 +526,45 @@ export default function AdminPage() {
           ) : <div className="admin-entry-list">
             {entries.map((entry, index) => (
               <article className="admin-entry" key={entry.id}>
-                <div className="admin-entry-top"><span>ITEM {String(index + 1).padStart(2, "0")}</span><div className="admin-entry-actions"><button aria-label={`Editar item ${index + 1}`} onClick={() => editEntry(index)}><Pencil size={15} /></button><button aria-label={`Remover item ${index + 1}`} onClick={() => removeEntry(index)}><Trash2 size={16} /></button></div></div>
-                <div className="admin-fields">
-                  {section.fields.map(([field, label]) => (
-                    <label className={["detail", "description"].includes(field) ? "admin-field admin-field-wide" : "admin-field"} key={field}>{label}
-                      {["detail", "description"].includes(field)
-                        ? <textarea value={entry[field] || ""} rows="2" onChange={(event) => changeEntry(index, field, event.target.value)} />
-                        : field === "status" ? <select value={entry[field] || "actual"} onChange={(event) => changeEntry(index, field, event.target.value)}><option value="actual">Colaboração actual</option><option value="anterior">Colaboração anterior</option></select> : <input value={entry[field] || ""} onChange={(event) => changeEntry(index, field, event.target.value)} placeholder={field === "videoUrl" ? "https://..." : ""} />}
-                    </label>
-                  ))}
+                <div className="admin-entry-top">
+                  <span>ITEM {String(index + 1).padStart(2, "0")}</span>
+                  <div className="admin-entry-actions">
+                    <button type="button" className="admin-edit-button" aria-label={`Editar item ${index + 1}`} onClick={() => editEntry(index)}><Pencil size={15} /> Editar</button>
+                    <button type="button" className="admin-delete-button" aria-label={`Remover item ${index + 1}`} onClick={() => removeEntry(index)}><Trash2 size={16} /></button>
+                  </div>
                 </div>
-                <div className="admin-media-upload">
-                  <label>
-                    {section.mediaLabel}
-                    <input
-                      type="file"
-                      accept={section.mediaAccept}
-                      disabled={uploadingId === mediaUploadId(entry.id)}
-                      onChange={(event) => handleUpload(index, event)}
-                    />
-                  </label>
-                  <small>
-                    {section.mediaKind === "image"
-                      ? "JPEG, PNG, WebP, GIF ou AVIF. Máximo: 15 MB."
-                      : "MP4, WebM ou MOV. Máximo: 150 MB."}
-                  </small>
-                  {uploadingId === mediaUploadId(entry.id) && <small className="admin-upload-progress">A carregar ficheiro...</small>}
+                <div className="admin-readonly-panel">
+                  <span className="admin-view-mode-label">Modo de leitura · clique em editar para alterar</span>
+                  <div className="admin-readonly-grid">
+                    {section.fields.map(([field, label]) => {
+                      const value = entry[field];
+                      const isLongText = ["detail", "description"].includes(field);
+
+                      return (
+                        <div className={isLongText ? "admin-readonly-field admin-readonly-field-wide" : "admin-readonly-field"} key={field}>
+                          <span>{label}</span>
+                          {isLongText ? <p>{value || "—"}</p> : <strong>{value || "—"}</strong>}
+                        </div>
+                      );
+                    })}
+                  </div>
                   {section.mediaKind === "image" && entry[section.mediaField] && (
-                    <img
-                      className="admin-media-preview"
-                      src={entry[section.mediaField].startsWith("photo-")
-                        ? `https://images.unsplash.com/${entry[section.mediaField]}?auto=format&fit=crop&w=320&q=70`
-                        : resolveMediaUrl(entry[section.mediaField])}
-                      alt={`Pré-visualização: ${entry.title || entry.name || "imagem"}`}
-                    />
+                    <div className="admin-readonly-media">
+                      <span>{section.mediaLabel}</span>
+                      <img
+                        className="admin-media-preview"
+                        src={entry[section.mediaField].startsWith("photo-")
+                          ? `https://images.unsplash.com/${entry[section.mediaField]}?auto=format&fit=crop&w=320&q=70`
+                          : resolveMediaUrl(entry[section.mediaField])}
+                        alt={`Pré-visualização: ${entry.title || entry.name || "imagem"}`}
+                      />
+                    </div>
                   )}
                   {section.mediaKind === "video" && isUploadedMedia(entry[section.mediaField]) && (
-                    <video className="admin-video-preview" src={resolveMediaUrl(entry[section.mediaField])} controls preload="metadata" />
+                    <div className="admin-readonly-media">
+                      <span>{section.mediaLabel}</span>
+                      <video className="admin-video-preview" src={resolveMediaUrl(entry[section.mediaField])} controls preload="metadata" />
+                    </div>
                   )}
                 </div>
               </article>
