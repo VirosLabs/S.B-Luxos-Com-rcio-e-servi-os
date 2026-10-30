@@ -160,6 +160,40 @@ function AdminLogin({ setupRequired, onAuthenticate, error }) {
   );
 }
 
+function AdminLoadingSkeleton() {
+  return (
+    <main className="admin-loading-screen" aria-busy="true" aria-label="A carregar a área administrativa">
+      <div className="admin-loading-header">
+        <div className="skeleton admin-loading-brand" />
+        <div className="skeleton admin-loading-session" />
+      </div>
+      <div className="admin-loading-layout">
+        <aside className="admin-loading-sidebar" aria-hidden="true">
+          <div className="skeleton admin-loading-sidebar-title" />
+          {Array.from({ length: 6 }, (_, index) => <div className="skeleton admin-loading-tab" key={index} />)}
+        </aside>
+        <section className="admin-loading-content" aria-hidden="true">
+          <div className="admin-loading-heading">
+            <div className="skeleton admin-loading-eyebrow" />
+            <h1 className="skeleton admin-loading-title" />
+            <div className="skeleton admin-loading-description" />
+          </div>
+          <div className="admin-loading-cards">
+            {Array.from({ length: 3 }, (_, index) => (
+              <article className="admin-loading-card" key={index}>
+                <h3 className="skeleton admin-loading-card-title" />
+                <div className="skeleton admin-loading-field" />
+                <div className="skeleton admin-loading-field admin-loading-field-short" />
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+      <p className="admin-loading-message">A carregar a área administrativa...</p>
+    </main>
+  );
+}
+
 export default function AdminPage() {
   const controller = useAdminController();
   useEffect(() => {
@@ -180,6 +214,9 @@ export default function AdminPage() {
   const [toast, setToast] = useState(null);
   const dismissToast = useCallback(() => setToast(null), []);
   const notify = useCallback((type, message) => setToast({ type, message }), []);
+  const requestConfirmation = useCallback((message, onConfirm) => {
+    setToast({ type: "confirm", message, onConfirm });
+  }, []);
 
   useEffect(() => {
     if (controller.status === "error") notify("error", "Ocorreu um erro ao carregar os dados.");
@@ -196,7 +233,7 @@ export default function AdminPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeSection, newEntry, uploadingId]);
 
-  if (controller.status === "loading") return <main className="admin-loading">A carregar a área administrativa...</main>;
+  if (controller.status === "loading") return <AdminLoadingSkeleton />;
   if (controller.status === "error") return <main className="admin-loading"><ToastNotice toast={toast} onDismiss={dismissToast} /><p>Ocorreu um erro ao carregar os dados.</p><button className="admin-primary-button" onClick={controller.refresh}>Tentar novamente</button></main>;
   if (!controller.authenticated) {
     return <AdminLogin setupRequired={controller.setupRequired} onAuthenticate={controller.authenticate} error={controller.error} />;
@@ -267,13 +304,23 @@ export default function AdminPage() {
     notify("success", editingIndex === null ? "Item adicionado. Guarde as alterações para publicar." : "Alteração preparada para guardar.");
   }
 
-  function removeEntry(index) {
+  function removeEntry(sectionKey, entryId) {
     setDraft((current) => {
       const next = structuredClone(current || controller.content);
-      next[activeSection].splice(index, 1);
+      const index = next[sectionKey].findIndex((entry) => entry.id === entryId);
+      if (index === -1) return current;
+      next[sectionKey].splice(index, 1);
       return next;
     });
     notify("success", "Item removido. Guarde as alterações para publicar.");
+  }
+
+  function requestRemoveEntry(entry) {
+    const sectionKey = activeSection;
+    const entryName = entry.title || entry.name || "este item";
+    requestConfirmation(`Tem a certeza de que pretende remover ${entryName}?`, () => {
+      removeEntry(sectionKey, entry.id);
+    });
   }
 
   function changeSetting(field, value) {
@@ -392,14 +439,15 @@ export default function AdminPage() {
     }
   }
 
-  async function handleRemoveAdmin(account) {
-    if (!window.confirm(`Remover a conta administrativa ${account.email}?`)) return;
-    try {
-      await controller.deleteAdmin(account.id);
-      notify("success", "Conta de administrador removida.");
-    } catch {
-      notify("error", "Ocorreu um erro ao remover a conta. Tente novamente.");
-    }
+  function handleRemoveAdmin(account) {
+    requestConfirmation(`Tem a certeza de que pretende remover a conta ${account.email}?`, async () => {
+      try {
+        await controller.deleteAdmin(account.id);
+        notify("success", "Conta de administrador removida.");
+      } catch {
+        notify("error", "Ocorreu um erro ao remover a conta. Tente novamente.");
+      }
+    });
   }
 
   async function signOut() {
@@ -530,13 +578,14 @@ export default function AdminPage() {
                   <span>ITEM {String(index + 1).padStart(2, "0")}</span>
                   <div className="admin-entry-actions">
                     <button type="button" className="admin-edit-button" aria-label={`Editar item ${index + 1}`} onClick={() => editEntry(index)}><Pencil size={15} /> Editar</button>
-                    <button type="button" className="admin-delete-button" aria-label={`Remover item ${index + 1}`} onClick={() => removeEntry(index)}><Trash2 size={16} /></button>
+                    <button type="button" className="admin-delete-button" aria-label={`Remover item ${index + 1}`} onClick={() => requestRemoveEntry(entry)}><Trash2 size={16} /></button>
                   </div>
                 </div>
                 <div className="admin-readonly-panel">
                   <span className="admin-view-mode-label">Modo de leitura · clique em editar para alterar</span>
+                  <h3 className="admin-entry-title">{entry.title || entry.name || `Item ${String(index + 1).padStart(2, "0")}`}</h3>
                   <div className="admin-readonly-grid">
-                    {section.fields.map(([field, label]) => {
+                    {section.fields.filter(([field]) => field !== (entry.title ? "title" : entry.name ? "name" : null)).map(([field, label]) => {
                       const value = entry[field];
                       const isLongText = ["detail", "description"].includes(field);
 
@@ -619,4 +668,3 @@ export default function AdminPage() {
     </main>
   );
 }
-

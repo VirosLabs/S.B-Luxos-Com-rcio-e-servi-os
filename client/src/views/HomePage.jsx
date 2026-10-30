@@ -126,7 +126,7 @@ function WhatsAppIcon({ size = 20, className = "" }) {
 }
 
 function HomePage() {
-  const { content, submitQuote } = useSiteController();
+  const { content, loading, submitQuote } = useSiteController();
   const services = content.services;
   const gallery = content.gallery;
   const videos = content.videos;
@@ -236,8 +236,19 @@ function HomePage() {
             <div><div className="eyebrow"><span /> {settings.servicesEyebrow}</div><h2>{settings.servicesTitle}</h2></div>
             <p>{settings.servicesDescription}</p>
           </div>
-          <div id="service-list" className={`service-grid${showAllServices ? "" : " service-grid-collapsed"}`}>
-            {services.map((service, index) => (
+          <div id="service-list" className={`service-grid${!loading && !showAllServices ? " service-grid-collapsed" : ""}`} aria-busy={loading}>
+            {loading
+              ? Array.from({ length: 3 }, (_, index) => (
+                <article className="service-card skeleton-card" key={`service-skeleton-${index}`} aria-hidden="true">
+                  <div className="service-image skeleton" />
+                  <div className="service-text">
+                    <h3 className="skeleton skeleton-heading" />
+                    <p className="skeleton skeleton-copy" />
+                    <p className="skeleton skeleton-copy skeleton-copy-short" />
+                  </div>
+                </article>
+              ))
+              : services.map((service, index) => (
               <article className="service-card" key={service.id}>
                 <a className="service-image" href="#contacto" aria-label={`Pedir orçamento: ${service.name}`}>
                   <img src={imageUrl(service.image, 900)} alt="" loading="lazy" />
@@ -248,7 +259,7 @@ function HomePage() {
               </article>
             ))}
           </div>
-          {services.length > 5 && (
+          {!loading && services.length > 5 && (
             <button
               className={`content-more services-more services-more-mobile${services.length > 7 ? " services-more-large" : ""}`}
               type="button"
@@ -268,7 +279,16 @@ function HomePage() {
             <div><div className="eyebrow"><span /> PARCERIAS</div><h2 id="brands-title">Marcas que confiam em nós.</h2></div>
             <p>Marcas com quem já colaborámos e que continuam a fazer parte do nosso percurso.</p>
           </div>
-          {brands.length > 0
+          {loading
+            ? <div className="brand-skeleton-grid" aria-hidden="true">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div className="brand-skeleton-item" key={`brand-skeleton-${index}`}>
+                  <div className="brand-card skeleton" />
+                  <h3 className="skeleton skeleton-brand-title" />
+                </div>
+              ))}
+            </div>
+            : brands.length > 0
             ? <div className="brands-marquee">
               <div className="brands-track">
                 {[false, true].map((isDuplicate) => (
@@ -276,9 +296,9 @@ function HomePage() {
                     {brands.map((brand) => (
                       <li className="brand-item" key={brand.id}>
                         <div className={brand.status === "anterior" ? "brand-card brand-card-previous" : "brand-card"}>
-                          {brand.logo ? <img src={imageUrl(brand.logo, 360)} alt={isDuplicate ? "" : `Logótipo ${brand.name}`} loading="lazy" /> : <strong>{brand.name}</strong>}
+                          {brand.logo ? <img src={imageUrl(brand.logo, 360)} alt={isDuplicate ? "" : `Logótipo ${brand.name}`} loading="lazy" /> : <h3>{brand.name}</h3>}
                         </div>
-                        {brand.logo && <div className="brand-meta"><strong>{brand.name}</strong></div>}
+                        {brand.logo && <div className="brand-meta"><h3>{brand.name}</h3></div>}
                       </li>
                     ))}
                   </ul>
@@ -293,9 +313,16 @@ function HomePage() {
             <div><div className="eyebrow"><span /> {settings.galleryEyebrow}</div><h2>{settings.galleryTitle}</h2></div>
             <p>{settings.galleryDescription}</p>
           </div>
-          {gallery.length > 0 && (
-            <div id="gallery-list" className={`inspiration-grid${showAllGallery ? "" : " inspiration-grid-collapsed"}`}>
-              {gallery.map((item, index) => (
+          {(loading || gallery.length > 0) && (
+            <div id="gallery-list" className={`inspiration-grid${!loading && !showAllGallery ? " inspiration-grid-collapsed" : ""}`} aria-busy={loading}>
+              {loading
+                ? Array.from({ length: 3 }, (_, index) => (
+                  <article className={`inspiration-card skeleton-gallery-card${index === 0 ? " inspiration-large" : ""}`} key={`gallery-skeleton-${index}`} aria-hidden="true">
+                    <div className="skeleton skeleton-gallery-image" />
+                    <div><small className="skeleton skeleton-category" /><h3 className="skeleton skeleton-heading" /></div>
+                  </article>
+                ))
+                : gallery.map((item, index) => (
                 <article className={`inspiration-card${index === 0 ? " inspiration-large" : ""}`} key={item.id}>
                   <img src={resolveMediaUrl(item.imageUrl)} alt={item.title} loading="lazy" />
                   <div><small>{item.category || settings.galleryCategoryFallback}</small><h3>{item.title}</h3></div>
@@ -303,7 +330,7 @@ function HomePage() {
               ))}
             </div>
           )}
-          {gallery.length > 5 && (
+          {!loading && gallery.length > 5 && (
             <button
               className="content-more gallery-more"
               type="button"
@@ -315,17 +342,27 @@ function HomePage() {
               {showAllGallery ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
             </button>
           )}
-          {gallery.length === 0 && <div className="gallery-empty">{settings.galleryEmptyText}</div>}
+          {!loading && gallery.length === 0 && <div className="gallery-empty">{settings.galleryEmptyText}</div>}
         </section>
 
-        {videos.length > 0 && (
+        {(loading || videos.length > 0) && (
           <section className="video-section section" id="videos">
             <div className="section-top">
               <div><div className="eyebrow"><span /> {settings.videoEyebrow}</div><h2>{settings.videoTitle}</h2></div>
               <p>{settings.videoDescription}</p>
             </div>
-            <div className="video-grid">
-              {videos.map((video) => {
+            <div className="video-grid" aria-busy={loading}>
+              {loading
+                ? Array.from({ length: 2 }, (_, index) => (
+                  <article className="video-card skeleton-video-card" key={`video-skeleton-${index}`} aria-hidden="true">
+                    <div className="skeleton skeleton-video-frame" />
+                    <div className="video-caption">
+                      <h3 className="skeleton skeleton-heading" />
+                      <p className="skeleton skeleton-copy" />
+                    </div>
+                  </article>
+                ))
+                : videos.map((video) => {
                 const embedUrl = videoEmbedUrl(video.videoUrl);
                 const playableVideoUrl = resolveMediaUrl(video.videoUrl);
                 const directVideo = /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(video.videoUrl);
